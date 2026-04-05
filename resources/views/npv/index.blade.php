@@ -241,7 +241,7 @@
 
     {{-- ── FORMULA INFO BOX ── --}}
     <div class="formula-box">
-        <h3>Rumus NPV</h3>
+        <h3>📐 Rumus NPV</h3>
         <div class="formula-code">
             NPV = -C₀ + Σ [ CFₜ / (1 + r)ᵗ ]<br>
             <span class="comment">
@@ -256,7 +256,7 @@
             @csrf
 
             {{-- ── SECTION 1: INFO PROYEK ── --}}
-            <p class="section-label">Informasi Proyek</p>
+            <p class="section-label">① Informasi Proyek</p>
 
             <div class="form-grid" style="margin-bottom: 2rem;">
 
@@ -281,7 +281,7 @@
                         <input
                             type="number"
                             name="initial_investment"
-                            placeholder="500000000"
+                            placeholder="500,000,000"
                             value="{{ old('initial_investment') }}"
                             min="0"
                             step="any"
@@ -311,7 +311,7 @@
             </div>
 
             {{-- ── SECTION 2: ARUS KAS ── --}}
-            <p class="section-label">Arus Kas Masuk per Tahun</p>
+            <p class="section-label">② Arus Kas Masuk per Tahun</p>
 
             <div id="cashflow-container">
                 {{-- Row pertama selalu ada, tidak bisa dihapus --}}
@@ -339,7 +339,7 @@
             {{-- ── SUBMIT ── --}}
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
                 <button type="submit" class="btn-submit">
-                    Hitung NPV
+                    Hitung NPV →
                 </button>
             </div>
 
