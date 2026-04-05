@@ -198,10 +198,10 @@
     {{-- ── NAVIGATION ── --}}
     <nav class="navbar">
         <div class="navbar-inner">
-            <a href="{{ route('npv.index') }}" class="navbar-brand">Kalkulator NPV</a>
+            <a href="{{ route('npv.index') }}" class="navbar-brand">SPK Investasi</a>
             <ul class="navbar-nav">
                 <li><a href="{{ route('npv.index') }}">Kalkulator</a></li>
-                <li><a href="#" onclick="alert('Fitur dalam pengembangan')">Riwayat</a></li>
+                <li><a href="{{ route('npv.history') }}">Riwayat</a></li>
             </ul>
         </div>
     </nav>
@@ -226,7 +226,7 @@
 
     {{-- ── FOOTER ── --}}
     <footer class="footer">
-        <p>Kalkulator Kelayakan Investasi &mdash; Metode <strong>Net Present Value (NPV)</strong> &mdash; Dibangun dengan Laravel</p>
+        <p>SPK Kelayakan Investasi &mdash; Metode <strong>Net Present Value (NPV)</strong> &mdash; Dibangun dengan Laravel</p>
     </footer>
 
     @stack('scripts')
