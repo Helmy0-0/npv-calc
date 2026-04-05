@@ -1,125 +1,58 @@
-# SPK Kelayakan Investasi — NPV Calculator
-## Aplikasi Laravel — Sistem Pendukung Keputusan
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
----
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-## 🗂️ Struktur Arsitektur (Pemisahan Layer)
+## About Laravel
 
-```
-app/
-├── Http/
-│   └── Controllers/
-│       └── NpvController.php       ← LAYER HTTP (terima request, validasi)
-└── Services/
-    └── NpvCalculatorService.php    ← LAYER LOGIKA (rumus matematis NPV)
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-resources/views/
-├── layouts/
-│   └── app.blade.php               ← LAYOUT MASTER (template utama)
-└── npv/
-    ├── index.blade.php             ← LAYER UI: Form Input
-    └── result.blade.php            ← LAYER UI: Tampilan Hasil
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-routes/
-└── web.php                         ← ROUTING
-```
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
----
+## Learning Laravel
 
-## 📐 Alur Data (Data Flow)
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-```
-[User] → Form Input
-   ↓
-[routes/web.php] → Route POST /npv/calculate
-   ↓
-[NpvController.php] → Validasi Input
-   ↓
-[NpvCalculatorService.php] → Hitung NPV (Rumus Matematis)
-   ↓
-[NpvController.php] → Kirim hasil ke View
-   ↓
-[npv/result.blade.php] → Tampilkan Laporan
-```
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
----
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
-## ⚙️ Instalasi
+## Agentic Development
 
-### 1. Clone / copy project
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+
 ```bash
-cd /var/www   # atau folder pilihan Anda
-# Copy semua file ke folder project laravel
+composer require laravel/boost --dev
+
+php artisan boost:install
 ```
 
-### 2. Install Laravel (jika belum ada)
-```bash
-composer create-project laravel/laravel spk-npv
-cd spk-npv
-```
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-### 3. Copy file-file berikut ke project Laravel:
-- `app/Services/NpvCalculatorService.php`
-- `app/Http/Controllers/NpvController.php`
-- `resources/views/layouts/app.blade.php`
-- `resources/views/npv/index.blade.php`
-- `resources/views/npv/result.blade.php`
-- `routes/web.php`
+## Contributing
 
-### 4. Jalankan server
-```bash
-php artisan serve
-```
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-### 5. Buka browser
-```
-http://localhost:8000
-```
+## Code of Conduct
 
----
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## 🔢 Rumus NPV yang Diimplementasikan
+## Security Vulnerabilities
 
-```
-NPV = -C₀ + Σ [ CFₜ / (1 + r)ᵗ ]
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-Dimana:
-  C₀  = Investasi Awal (Modal Awal)
-  CFₜ = Arus Kas pada tahun ke-t
-  r   = Tingkat Diskonto (dalam desimal)
-  t   = Periode tahun (1, 2, 3, ...)
-```
+## License
 
-**Keputusan:**
-- NPV > 0 → ✅ Investasi LAYAK / DITERIMA
-- NPV = 0 → ⚖️  Break Even (Impas)
-- NPV < 0 → ❌ Investasi TIDAK LAYAK / DITOLAK
-
----
-
-## 📁 Penjelasan Setiap File (untuk Presentasi)
-
-| File | Layer | Fungsi |
-|------|-------|--------|
-| `NpvCalculatorService.php` | **Business Logic** | Berisi semua rumus matematis NPV, perhitungan PV per tahun, dan logika keputusan |
-| `NpvController.php` | **HTTP/Controller** | Menerima HTTP request, memvalidasi input, memanggil Service, meneruskan hasil ke View |
-| `layouts/app.blade.php` | **UI/Template** | Layout master: navbar, head, footer |
-| `npv/index.blade.php` | **UI/Frontend** | Form input dinamis (nama proyek, modal, discount rate, arus kas) |
-| `npv/result.blade.php` | **UI/Frontend** | Laporan hasil: tabel PV, nilai NPV, keputusan layak/tidak |
-| `routes/web.php` | **Routing** | Mendefinisikan URL endpoint GET dan POST |
-
----
-
-## 🎯 Fitur
-
-- ✅ Form input dinamis (tambah/hapus tahun arus kas)
-- ✅ Validasi input server-side (Laravel Validation)
-- ✅ Perhitungan NPV dengan rincian PV per tahun
-- ✅ Keputusan otomatis (Layak / Tidak Layak / Break Even)
-- ✅ Tabel laporan lengkap
-- ✅ UI dark-mode modern (tanpa dependensi CSS framework eksternal)
-- ✅ Pemisahan layer: Service ↔ Controller ↔ View
-
----
-
-*Dibangun dengan Laravel — SPK Metode Net Present Value*
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
