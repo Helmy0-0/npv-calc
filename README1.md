@@ -1,27 +1,35 @@
-# SPK Kelayakan Investasi — NPV Calculator
-## Aplikasi Laravel — Sistem Pendukung Keputusan
+# Investment Feasibility Checker — NPV Calculator
+## Decision Support System
 
 ---
 
-## Struktur Arsitektur (Pemisahan Layer)
+## Architectural Structure
 
 ```
 app/
-├── Http/
-│   └── Controllers/
-│       └── NpvController.php       ← LAYER HTTP (terima request, validasi)
-└── Services/
-    └── NpvCalculatorService.php    ← LAYER LOGIKA (rumus matematis NPV)
+├── Http/Controllers/
+│   └── NpvController.php          ← HTTP LAYER  : request, val, etc.
+├── Services/
+│   └── NpvCalculatorService.php   ← LOGIC LAYER : NPV Math Formula
+├── Repositories/
+│   └── NpvRepository.php          ← DATA LAYER  : database
+└── Models/
+    ├── NpvProject.php             
+    └── NpvCashFlow.php            
+database/
+├── migrations/
+│   ├── ..._create_npv_projects_table.php
+│   └── ..._create_npv_cash_flows_table.php
+└── seeders/
+    └── NpvProjectSeeder.php      
 
-resources/views/
-├── layouts/
-│   └── app.blade.php               ← LAYOUT MASTER (template utama)
-└── npv/
-    ├── index.blade.php             ← LAYER UI: Form Input
-    └── result.blade.php            ← LAYER UI: Tampilan Hasil
+resources/views/npv/
+├── index.blade.php               
+├── result.blade.php               
+└── history.blade.php              
 
 routes/
-└── web.php                         ← ROUTING
+└── web.php                   
 ```
 
 ---
@@ -29,17 +37,19 @@ routes/
 ## Data Flow
 
 ```
-[User] → Form Input
+User Form Input
    ↓
-[routes/web.php] → Route POST /npv/calculate
+NpvController → validate()
    ↓
-[NpvController.php] → Validasi Input
+NpvCalculatorService → calculate()   [COUNT NPV]
    ↓
-[NpvCalculatorService.php] → Hitung NPV (Rumus Matematis)
+NpvRepository → saveProject()        [SAVE TO DB]
    ↓
-[NpvController.php] → Kirim hasil ke View
+redirect → GET /npv/{id}
    ↓
-[npv/result.blade.php] → Tampilkan Laporan
+NpvRepository → findWithCashFlows()  [LOAD FROM DB]
+   ↓
+npv/result.blade.php
 ```
 
 ---
@@ -48,25 +58,16 @@ routes/
 
 ### 1. Clone / copy project
 ```bash
-cd /var/www   # atau folder pilihan Anda
-# Copy semua file ke folder project laravel
+cd /var/www 
 ```
 
-### 2. Install Laravel (jika belum ada)
+### 2. Install Laravel (if it doesn't exist yet)
 ```bash
-composer create-project laravel/laravel spk-npv
-cd spk-npv
+composer create-project laravel/laravel npvcalc
+cd npvcalc
 ```
 
-### 3. Copy file-file berikut ke project Laravel:
-- `app/Services/NpvCalculatorService.php`
-- `app/Http/Controllers/NpvController.php`
-- `resources/views/layouts/app.blade.php`
-- `resources/views/npv/index.blade.php`
-- `resources/views/npv/result.blade.php`
-- `routes/web.php`
-
-### 4. Jalankan server
+### 3. Run Server
 ```bash
 php artisan serve
 ```
@@ -78,48 +79,37 @@ http://localhost:8000
 
 ---
 
-## 🔢 Rumus NPV yang Diimplementasikan
+## NPV Formula
 
 ```
 NPV = -C₀ + Σ [ CFₜ / (1 + r)ᵗ ]
 
 Dimana:
-  C₀  = Investasi Awal (Modal Awal)
-  CFₜ = Arus Kas pada tahun ke-t
-  r   = Tingkat Diskonto (dalam desimal)
-  t   = Periode tahun (1, 2, 3, ...)
+  C₀  = Initial Investment (Initial Capital)
+  CFₜ = Cash Flow in t year
+  r   = Discount Rate (in decimal)
+  t   = Year period (1, 2, 3, ...)
 ```
 
-**Keputusan:**
-- NPV > 0 → ✅ Investasi LAYAK / DITERIMA
-- NPV = 0 → ⚖️  Break Even (Impas)
-- NPV < 0 → ❌ Investasi TIDAK LAYAK / DITOLAK
+**Decision:**
+- NPV > 0 → Worthy investment / Accepted
+- NPV = 0 → Break Even 
+- NPV < 0 → Bad investment / Declined
 
 ---
 
-## 📁 Penjelasan Setiap File (untuk Presentasi)
+---
 
-| File | Layer | Fungsi |
-|------|-------|--------|
-| `NpvCalculatorService.php` | **Business Logic** | Berisi semua rumus matematis NPV, perhitungan PV per tahun, dan logika keputusan |
-| `NpvController.php` | **HTTP/Controller** | Menerima HTTP request, memvalidasi input, memanggil Service, meneruskan hasil ke View |
-| `layouts/app.blade.php` | **UI/Template** | Layout master: navbar, head, footer |
-| `npv/index.blade.php` | **UI/Frontend** | Form input dinamis (nama proyek, modal, discount rate, arus kas) |
-| `npv/result.blade.php` | **UI/Frontend** | Laporan hasil: tabel PV, nilai NPV, keputusan layak/tidak |
-| `routes/web.php` | **Routing** | Mendefinisikan URL endpoint GET dan POST |
+## Feature
+
+Dynamic input form (add/remove cash flow years)
+Server-side input validation (Laravel Validation)
+NPV calculation with annual PV breakdown
+Automated decision (Feasible/Not Feasible/Break Even)
+Comprehensive report tables
+Modern dark-mode UI (no external CSS framework dependencies)
+Layer separation: Service ↔ Controller ↔ View
 
 ---
 
-## 🎯 Fitur
-
-- ✅ Form input dinamis (tambah/hapus tahun arus kas)
-- ✅ Validasi input server-side (Laravel Validation)
-- ✅ Perhitungan NPV dengan rincian PV per tahun
-- ✅ Keputusan otomatis (Layak / Tidak Layak / Break Even)
-- ✅ Tabel laporan lengkap
-- ✅ UI dark-mode modern (tanpa dependensi CSS framework eksternal)
-- ✅ Pemisahan layer: Service ↔ Controller ↔ View
-
----
-
-*Dibangun dengan Laravel — SPK Metode Net Present Value*
+*Build with Laravel — Net Present Value Method*
