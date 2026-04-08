@@ -98,17 +98,15 @@ Dimana:
 
 ---
 
----
-
 ## Feature
 
-Dynamic input form (add/remove cash flow years)
-Server-side input validation (Laravel Validation)
-NPV calculation with annual PV breakdown
-Automated decision (Feasible/Not Feasible/Break Even)
-Comprehensive report tables
-Modern dark-mode UI (no external CSS framework dependencies)
-Layer separation: Service ↔ Controller ↔ View
+- Dynamic input form (add/remove cash flow years)
+- Server-side input validation (Laravel Validation)
+- NPV calculation with annual PV breakdown
+- Automated decision (Feasible/Not Feasible/Break Even)
+- Comprehensive report tables
+- Modern dark-mode UI (no external CSS framework dependencies)
+- Layer separation: Service ↔ Controller ↔ View
 
 ---
 
