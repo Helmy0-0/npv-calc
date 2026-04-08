@@ -3,21 +3,11 @@
 namespace App\Services;
 
 /**
- * ============================================================
- *  NPV CALCULATOR SERVICE  (v2 — dengan DB support)
+ *  NPV CALCULATOR SERVICE  (v2)
  *  Layer  : Business Logic / Service Layer
- *  Tugas  : Menjalankan semua perhitungan matematis NPV.
- *           TIDAK tahu tentang database — itu urusan Repository.
- * ============================================================
  */
 class NpvCalculatorService
 {
-    /**
-     * Hitung NPV lengkap beserta rincian per tahun.
-     *
-     * Rumus NPV:
-     *   NPV = -C₀ + Σ [ CFₜ / (1 + r)^t ]   untuk t = 1..n
-     */
     public function calculate(float $initialInvestment, float $discountRate, array $cashFlows): array
     {
         $rate = $discountRate / 100;
@@ -58,8 +48,8 @@ class NpvCalculatorService
 
     private function makeDecision(float $npv): array
     {
-        if ($npv > 0)  return ['label' => 'Investasi LAYAK / DITERIMA',      'class' => 'feasible',   'feasible' => true];
-        if ($npv == 0) return ['label' => 'Investasi BREAK EVEN (Impas)',     'class' => 'breakeven',  'feasible' => true];
-        return                ['label' => 'Investasi TIDAK LAYAK / DITOLAK', 'class' => 'infeasible', 'feasible' => false];
+        if ($npv > 0)  return ['label' => 'Worthy Investment / Accepted',      'class' => 'feasible',   'feasible' => true];
+        if ($npv == 0) return ['label' => 'Break Even Investment',     'class' => 'breakeven',  'feasible' => true];
+        return                ['label' => 'Bad investment / Declined', 'class' => 'infeasible', 'feasible' => false];
     }
 }

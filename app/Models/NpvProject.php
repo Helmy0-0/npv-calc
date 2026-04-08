@@ -7,12 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * ============================================================
  *  MODEL: NpvProject
  *  Layer  : Data / Model Layer
- *  Tugas  : Merepresentasikan tabel npv_projects.
- *           Mendefinisikan relasi ke NpvCashFlow.
- * ============================================================
  *
  * @property int         $id
  * @property string      $project_name
@@ -31,9 +27,6 @@ class NpvProject extends Model
 
     protected $table = 'npv_projects';
 
-    /**
-     * Kolom yang boleh di-mass assign (via create/fill).
-     */
     protected $fillable = [
         'project_name',
         'initial_investment',
@@ -45,9 +38,6 @@ class NpvProject extends Model
         'is_feasible',
     ];
 
-    /**
-     * Cast otomatis tipe data kolom.
-     */
     protected $casts = [
         'initial_investment'  => 'float',
         'discount_rate'       => 'float',
@@ -56,12 +46,6 @@ class NpvProject extends Model
         'is_feasible'         => 'boolean',
     ];
 
-    // ── RELASI ────────────────────────────────────────────────────────
-
-    /**
-     * Satu proyek memiliki banyak baris arus kas.
-     * Eager load otomatis diurutkan berdasarkan tahun.
-     */
     public function cashFlows(): HasMany
     {
         return $this->hasMany(NpvCashFlow::class, 'npv_project_id')

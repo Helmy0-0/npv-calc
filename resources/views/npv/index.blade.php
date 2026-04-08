@@ -1,10 +1,3 @@
-{{-- ============================================================
-     VIEW: npv/index.blade.php
-     Layer  : Presentation / Frontend Layer
-     Tugas  : Menampilkan form input data proyek dan arus kas.
-              View tidak mengandung logika perhitungan sama sekali.
-     ============================================================ --}}
-
 @extends('layouts.app')
 
 @section('title', 'Input Data Proyek')
@@ -234,18 +227,18 @@
 
     {{-- ── PAGE HEADER ── --}}
     <div class="page-header">
-        <span class="badge">Sistem Pendukung Keputusan</span>
-        <h1>Kalkulator <span>NPV</span> Investasi</h1>
-        <p>Masukkan data proyek untuk menghitung kelayakan investasi menggunakan metode Net Present Value.</p>
+        <span class="badge">Decision Support System</span>
+        <h1><span>NPV</span>Investment Calculator</h1>
+        <p>Enter project data to calculate investment feasibility using the Net Present Value method.</p>
     </div>
 
     {{-- ── FORMULA INFO BOX ── --}}
     <div class="formula-box">
-        <h3>📐 Rumus NPV</h3>
+        <h3>NPV Formula</h3>
         <div class="formula-code">
             NPV = -C₀ + Σ [ CFₜ / (1 + r)ᵗ ]<br>
             <span class="comment">
-                &nbsp;&nbsp;dimana: C₀ = Investasi Awal, CFₜ = Arus Kas Tahun ke-t, r = Tingkat Diskonto
+                &nbsp;&nbsp;C₀ = Initial Investment, CFₜ = Cash Flow Year t, r = Discount Rate
             </span>
         </div>
     </div>
@@ -255,18 +248,18 @@
         <form action="{{ route('npv.calculate') }}" method="POST" id="npv-form">
             @csrf
 
-            {{-- ── SECTION 1: INFO PROYEK ── --}}
-            <p class="section-label">① Informasi Proyek</p>
+            {{--PROJECT INFO--}}
+            <p class="section-label">① Project Information</p>
 
             <div class="form-grid" style="margin-bottom: 2rem;">
 
-                {{-- Nama Proyek --}}
+                {{-- Project Name --}}
                 <div class="form-group span-2">
-                    <label>Nama Proyek / Studi Kasus <span class="required">*</span></label>
+                    <label>Project Name<span class="required">*</span></label>
                     <input
                         type="text"
                         name="project_name"
-                        placeholder="contoh: Pembangunan Pabrik Unit B"
+                        placeholder="example: Construction of Unit B Factory"
                         value="{{ old('project_name') }}"
                         autocomplete="off"
                         required
@@ -275,7 +268,7 @@
 
                 {{-- Modal Awal --}}
                 <div class="form-group">
-                    <label>Modal Awal / Investasi (Rp) <span class="required">*</span></label>
+                    <label>Initial capital / Investment (Rp) <span class="required">*</span></label>
                     <div class="input-wrap has-prefix">
                         <span class="prefix">Rp</span>
                         <input
@@ -292,7 +285,7 @@
 
                 {{-- Discount Rate --}}
                 <div class="form-group">
-                    <label>Tingkat Diskonto / Discount Rate <span class="required">*</span></label>
+                    <label>Discount Rate <span class="required">*</span></label>
                     <div class="input-wrap has-suffix">
                         <input
                             type="number"
@@ -310,36 +303,35 @@
 
             </div>
 
-            {{-- ── SECTION 2: ARUS KAS ── --}}
-            <p class="section-label">② Arus Kas Masuk per Tahun</p>
+            {{--CASHFLOW --}}
+            <p class="section-label">② Cash Inflow per Year</p>
 
             <div id="cashflow-container">
-                {{-- Row pertama selalu ada, tidak bisa dihapus --}}
                 <div class="cashflow-row" data-index="0">
-                    <span class="year-badge">Tahun 1</span>
+                    <span class="year-badge">Year 1</span>
                     <div class="input-wrap has-prefix">
                         <span class="prefix">Rp</span>
                         <input
                             type="number"
                             name="cash_flows[]"
-                            placeholder="Arus kas tahun ke-1"
+                            placeholder="Cash flow for year-1"
                             value="{{ old('cash_flows.0') }}"
                             step="any"
                             required
                         >
                     </div>
-                    <div></div> {{-- Spacer untuk kolom tombol hapus --}}
+                    <div></div>
                 </div>
             </div>
 
             <button type="button" class="btn-add-year" id="btn-add-year">
-                <span>＋</span> Tambah Tahun
+                <span>＋</span> Add Year
             </button>
 
-            {{-- ── SUBMIT ── --}}
+            {{--SUBMIT--}}
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
                 <button type="submit" class="btn-submit">
-                    Hitung NPV →
+                    Calculate NPV →
                 </button>
             </div>
 
@@ -351,34 +343,29 @@
 @push('scripts')
 <script>
     /**
-     * ============================================================
      *  FRONTEND JAVASCRIPT
-     *  Tugas: Mengelola form dinamis (tambah/hapus baris arus kas)
-     * ============================================================
      */
     (function () {
         const container = document.getElementById('cashflow-container');
         const btnAdd    = document.getElementById('btn-add-year');
 
-        // Hitung jumlah baris saat ini
         function getRowCount() {
             return container.querySelectorAll('.cashflow-row').length;
         }
 
-        // Buat baris arus kas baru
         function createRow(yearNumber) {
             const row = document.createElement('div');
             row.className = 'cashflow-row';
             row.dataset.index = yearNumber - 1;
 
             row.innerHTML = `
-                <span class="year-badge">Tahun ${yearNumber}</span>
+                <span class="year-badge">Year ${yearNumber}</span>
                 <div class="input-wrap has-prefix">
                     <span class="prefix">Rp</span>
                     <input
                         type="number"
                         name="cash_flows[]"
-                        placeholder="Arus kas tahun ke-${yearNumber}"
+                        placeholder="Cash flow for year-${yearNumber}"
                         step="any"
                         required
                     >
@@ -386,7 +373,6 @@
                 <button type="button" class="btn-remove" title="Hapus tahun ini">×</button>
             `;
 
-            // Event listener untuk tombol hapus
             row.querySelector('.btn-remove').addEventListener('click', function () {
                 row.remove();
                 reindexRows();
@@ -394,8 +380,6 @@
 
             return row;
         }
-
-        // Update label "Tahun X" setelah penghapusan
         function reindexRows() {
             const rows = container.querySelectorAll('.cashflow-row');
             rows.forEach(function (row, i) {
@@ -403,13 +387,12 @@
                 const badge    = row.querySelector('.year-badge');
                 const input    = row.querySelector('input');
 
-                badge.textContent        = `Tahun ${yearNum}`;
-                input.placeholder        = `Arus kas tahun ke-${yearNum}`;
+                badge.textContent        = `Year ${yearNum}`;
+                input.placeholder        = `Cash flow for year-${yearNum}`;
                 row.dataset.index        = i;
             });
         }
 
-        // Tambah tahun
         btnAdd.addEventListener('click', function () {
             const newYear = getRowCount() + 1;
             const newRow  = createRow(newYear);
@@ -417,11 +400,10 @@
             newRow.querySelector('input').focus();
         });
 
-        // Validasi minimal 1 baris sebelum submit
         document.getElementById('npv-form').addEventListener('submit', function (e) {
             if (getRowCount() < 1) {
                 e.preventDefault();
-                alert('Minimal satu baris arus kas harus diisi.');
+                alert('At least one cash flow row must be filled in.');
             }
         });
 

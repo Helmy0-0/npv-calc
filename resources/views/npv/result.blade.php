@@ -1,9 +1,3 @@
-{{-- ============================================================
-     VIEW: npv/result.blade.php  (v2 — data dari DB via $project)
-     Layer  : Presentation / Frontend Layer
-     Variabel yang diterima: $project (NpvProject model + cashFlows)
-     ============================================================ --}}
-
 @extends('layouts.app')
 
 @section('title', 'Hasil NPV — ' . $project->project_name)
@@ -85,15 +79,15 @@
 
     @if(session('success'))
         <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:var(--radius-md);padding:.85rem 1.25rem;margin-bottom:1.5rem;color:#6ee7b7;font-size:.875rem;display:flex;align-items:center;gap:.5rem;">
-            ✔ {{ session('success') }}
+            Success {{ session('success') }}
         </div>
     @endif
 
     <div class="page-header">
-        <span class="badge">Laporan Hasil Perhitungan</span>
+        <span class="badge">Calculation Results Report</span>
         <h1>Analisis <span>NPV</span></h1>
         <div style="display:flex;gap:.75rem;align-items:center;margin-top:.75rem;flex-wrap:wrap;">
-            <span class="saved-badge">✔ Tersimpan di Database</span>
+            <span class="saved-badge">Saved</span>
             <span class="meta-pill">ID #{{ $project->id }}</span>
             <span class="meta-pill">📅 {{ $project->created_at->format('d M Y, H:i') }}</span>
         </div>
@@ -103,13 +97,13 @@
     <div class="decision-banner {{ $project->decision_class }}">
         <div class="decision-left">
             <p class="decision-meta">
-                @if($project->is_feasible) ✔ Keputusan @else ✘ Keputusan @endif
+                @if($project->is_feasible) Worth Decision @else Bad Decision @endif
             </p>
             <h2 class="decision-title">{{ $project->decision }}</h2>
-            <p class="decision-project">Proyek: <strong>{{ $project->project_name }}</strong></p>
+            <p class="decision-project">Project: <strong>{{ $project->project_name }}</strong></p>
         </div>
         <div class="npv-badge">
-            <p class="label">Nilai NPV</p>
+            <p class="label">NPV Value</p>
             <div class="npv-value {{ $project->npv > 0 ? 'positive' : ($project->npv < 0 ? 'negative' : 'zero') }}">
                 Rp {{ number_format($project->npv, 2, ',', '.') }}
             </div>
@@ -119,15 +113,15 @@
     {{-- ── SUMMARY CARDS ── --}}
     <div class="summary-grid">
         <div class="summary-card">
-            <p class="s-label">Modal Awal (C₀)</p>
+            <p class="s-label">Initial capital (C₀)</p>
             <p class="s-value">Rp {{ number_format($project->initial_investment, 0, ',', '.') }}</p>
         </div>
         <div class="summary-card">
-            <p class="s-label">Tingkat Diskonto (r)</p>
+            <p class="s-label">Discount Rate (r)</p>
             <p class="s-value accent">{{ number_format($project->discount_rate, 2, ',', '.') }}%</p>
         </div>
         <div class="summary-card">
-            <p class="s-label">Total PV Arus Kas</p>
+            <p class="s-label">Total Cash Flow PV</p>
             <p class="s-value">Rp {{ number_format($project->total_present_value, 2, ',', '.') }}</p>
         </div>
     </div>
@@ -135,23 +129,23 @@
     {{-- ── DETAIL TABLE ── --}}
     <div class="table-card">
         <div class="table-header">
-            <h2>📊 Rincian Present Value per Tahun</h2>
-            <span>{{ $project->cashFlows->count() }} periode</span>
+            <h2>Present Value Details per Year</h2>
+            <span>{{ $project->cashFlows->count() }} period</span>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Periode (t)</th>
-                        <th>Arus Kas (CFₜ)</th>
-                        <th>Faktor Diskonto (1+r)ᵗ</th>
+                        <th>Period (t)</th>
+                        <th>Cashflow (CFₜ)</th>
+                        <th>Discount Factor (1+r)ᵗ</th>
                         <th>Present Value (PV)</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($project->cashFlows as $row)
                     <tr>
-                        <td>Tahun {{ $row->year }}</td>
+                        <td>Year {{ $row->year }}</td>
                         <td>Rp {{ number_format($row->cash_flow, 2, ',', '.') }}</td>
                         <td>{{ number_format($row->discount_factor, 6, ',', '.') }}</td>
                         <td class="{{ $row->present_value >= 0 ? 'pv-positive' : 'pv-negative' }}">
@@ -174,9 +168,9 @@
 
     {{-- ── CALCULATION DETAIL ── --}}
     <div class="detail-box">
-        <h3>🧮 Langkah Perhitungan NPV</h3>
+        <h3>NPV Calculation Steps</h3>
         <div class="detail-step">
-            NPV = <span class="hl">Total PV</span> − <span class="hl">Investasi Awal</span><br>
+            NPV = <span class="hl">Total PV</span> − <span class="hl">Initial Investment</span><br>
             NPV = Rp {{ number_format($project->total_present_value, 2, ',', '.') }}
                   − Rp {{ number_format($project->initial_investment, 2, ',', '.') }}<br>
             NPV = <strong>Rp {{ number_format($project->npv, 2, ',', '.') }}</strong>
@@ -187,11 +181,11 @@
 
     {{-- ── ACTION BAR ── --}}
     <div class="action-bar">
-        <a href="{{ route('npv.index') }}" class="btn-back">← Hitung Proyek Baru</a>
-        <a href="{{ route('npv.history') }}" class="btn-back">📋 Lihat Riwayat</a>
+        <a href="{{ route('npv.index') }}" class="btn-back">← Calculate New Projects</a>
+        <a href="{{ route('npv.history') }}" class="btn-back">View History</a>
 
         <form action="{{ route('npv.destroy', $project->id) }}" method="POST"
-              onsubmit="return confirm('Yakin ingin menghapus proyek ini dari riwayat?')">
+              onsubmit="return confirm('You sure want to delete this project from history??')">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn-delete">🗑 Hapus</button>

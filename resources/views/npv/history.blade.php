@@ -1,13 +1,6 @@
-{{-- ============================================================
-     VIEW: npv/history.blade.php
-     Layer  : Presentation / Frontend Layer
-     Tugas  : Menampilkan daftar semua proyek yang tersimpan di DB.
-     Variabel: $projects (paginated), $stats (array ringkasan)
-     ============================================================ --}}
-
 @extends('layouts.app')
 
-@section('title', 'Riwayat Proyek NPV')
+@section('title', 'History NPV Projects')
 
 @push('styles')
 <style>
@@ -179,33 +172,32 @@
 
     @if(session('success'))
         <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:var(--radius-md);padding:.85rem 1.25rem;margin-bottom:1.5rem;color:#6ee7b7;font-size:.875rem;">
-            ✔ {{ session('success') }}
+            success {{ session('success') }}
         </div>
     @endif
 
     {{-- ── PAGE HEADER ── --}}
     <div class="page-header">
         <span class="badge">Database</span>
-        <h1>Riwayat <span>Proyek</span></h1>
-        <p>Semua proyek yang pernah dihitung dan tersimpan di database.</p>
+        <h1>Project <span>History</span></h1>
     </div>
 
     {{-- ── STATS CARDS ── --}}
     <div class="stats-grid">
         <div class="stat-card total">
-            <p class="stat-label">Total Proyek</p>
+            <p class="stat-label">Total Project</p>
             <p class="stat-value">{{ $stats['total'] }}</p>
         </div>
         <div class="stat-card feasible">
-            <p class="stat-label">Layak</p>
+            <p class="stat-label">Worthy</p>
             <p class="stat-value success">{{ $stats['feasible'] }}</p>
         </div>
         <div class="stat-card infeasible">
-            <p class="stat-label">Tidak Layak</p>
+            <p class="stat-label">Bad</p>
             <p class="stat-value danger">{{ $stats['infeasible'] }}</p>
         </div>
         <div class="stat-card avg">
-            <p class="stat-label">Rata-rata NPV</p>
+            <p class="stat-label">NPV Average</p>
             <p class="stat-value info small">Rp {{ number_format($stats['avg_npv'], 0, ',', '.') }}</p>
         </div>
     </div>
@@ -213,15 +205,14 @@
     {{-- ── PROJECT TABLE ── --}}
     <div class="history-table-card">
         <div class="table-toolbar">
-            <h2>📋 Daftar Proyek</h2>
-            <a href="{{ route('npv.index') }}" class="btn-new">＋ Proyek Baru</a>
+            <h2>Project List</h2>
+            <a href="{{ route('npv.index') }}" class="btn-new">＋ New Project</a>
         </div>
 
         @if($projects->isEmpty())
             <div class="empty-state">
-                <div class="icon">📂</div>
-                <p>Belum ada proyek yang tersimpan.<br>
-                   <a href="{{ route('npv.index') }}" style="color:var(--clr-accent)">Hitung proyek pertama Anda →</a>
+                <p>There are no projects saved yet.<br>
+                   <a href="{{ route('npv.index') }}" style="color:var(--clr-accent)">Calculate your first project →</a>
                 </p>
             </div>
         @else
@@ -230,14 +221,14 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Nama Proyek</th>
-                            <th class="num">Modal Awal</th>
-                            <th class="num">Diskonto</th>
-                            <th class="num">Tahun</th>
+                            <th>Project Name</th>
+                            <th class="num">Initial capital</th>
+                            <th class="num">Discount Rate</th>
+                            <th class="num">Year</th>
                             <th class="num">NPV</th>
                             <th>Status</th>
-                            <th>Tanggal</th>
-                            <th>Aksi</th>
+                            <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -258,7 +249,7 @@
                             </td>
                             <td>
                                 <span class="badge-{{ $project->decision_class }}">
-                                    {{ $project->is_feasible ? 'Layak' : ($project->decision_class === 'breakeven' ? 'Impas' : 'Tidak Layak') }}
+                                    {{ $project->is_feasible ? 'Worth' : ($project->decision_class === 'breakeven' ? 'Break Even' : 'Bad') }}
                                 </span>
                             </td>
                             <td style="color:var(--clr-muted);font-size:.8rem;">
@@ -268,9 +259,9 @@
                                 <div class="row-actions">
                                     <a href="{{ route('npv.show', $project->id) }}" class="btn-detail">Detail</a>
                                     <form action="{{ route('npv.destroy', $project->id) }}" method="POST"
-                                          onsubmit="return confirm('Hapus proyek {{ addslashes($project->project_name) }}?')">
+                                          onsubmit="return confirm('Delete Project {{ addslashes($project->project_name) }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn-del">Hapus</button>
+                                        <button type="submit" class="btn-del">Delete</button>
                                     </form>
                                 </div>
                             </td>
@@ -284,8 +275,8 @@
             @if($projects->hasPages())
             <div class="pagination-wrap">
                 <span class="info">
-                    Menampilkan {{ $projects->firstItem() }}–{{ $projects->lastItem() }}
-                    dari {{ $projects->total() }} proyek
+                    Displaying {{ $projects->firstItem() }}–{{ $projects->lastItem() }}
+                    from {{ $projects->total() }} project
                 </span>
                 <ul class="pagination">
                     {{-- Previous --}}

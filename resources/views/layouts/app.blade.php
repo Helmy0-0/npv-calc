@@ -198,10 +198,10 @@
     {{-- ── NAVIGATION ── --}}
     <nav class="navbar">
         <div class="navbar-inner">
-            <a href="{{ route('npv.index') }}" class="navbar-brand">SPK Investasi</a>
+            <a href="{{ route('npv.index') }}" class="navbar-brand">Investment Decision Support System</a>
             <ul class="navbar-nav">
-                <li><a href="{{ route('npv.index') }}">Kalkulator</a></li>
-                <li><a href="{{ route('npv.history') }}">Riwayat</a></li>
+                <li><a href="{{ route('npv.index') }}">Calculator</a></li>
+                <li><a href="{{ route('npv.history') }}">History</a></li>
             </ul>
         </div>
     </nav>
@@ -212,7 +212,7 @@
         {{-- Validation Errors --}}
         @if ($errors->any())
             <div class="alert-error">
-                <strong>⚠ Terdapat kesalahan input:</strong>
+                <strong>⚠ There is an input error:</strong>
                 <ul>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -226,7 +226,7 @@
 
     {{-- ── FOOTER ── --}}
     <footer class="footer">
-        <p>SPK Kelayakan Investasi &mdash; Metode <strong>Net Present Value (NPV)</strong> &mdash; Dibangun dengan Laravel</p>
+        <p>Investment Feasibility Checker &mdash; <strong>Net Present Value (NPV)</strong> &mdash; Build with Laravel</p>
     </footer>
 
     @stack('scripts')
