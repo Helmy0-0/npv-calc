@@ -7,12 +7,8 @@ use App\Services\NpvCalculatorService;
 use App\Repositories\NpvRepository;
 
 /**
- * ============================================================
- *  NPV CONTROLLER  (v2 — dengan Database)
+ *  NPV CONTROLLER  (v2)
  *  Layer  : HTTP / Controller Layer
- *  Alur POST /npv/calculate:
- *    Input → Validasi → Service (hitung) → Repository (simpan) → View
- * ============================================================
  */
 class NpvController extends Controller
 {
@@ -37,14 +33,14 @@ class NpvController extends Controller
             'cash_flows'         => 'required|array|min:1',
             'cash_flows.*'       => 'required|numeric',
         ], [
-            'project_name.required'       => 'Nama proyek wajib diisi.',
-            'initial_investment.required' => 'Modal awal wajib diisi.',
-            'initial_investment.min'      => 'Modal awal tidak boleh negatif.',
-            'discount_rate.required'      => 'Tingkat diskonto wajib diisi.',
-            'discount_rate.max'           => 'Tingkat diskonto tidak boleh lebih dari 100%.',
-            'cash_flows.required'         => 'Minimal satu tahun arus kas harus diisi.',
-            'cash_flows.*.required'       => 'Semua kolom arus kas wajib diisi.',
-            'cash_flows.*.numeric'        => 'Arus kas harus berupa angka.',
+            'project_name.required'       => 'The project name is required.',
+            'initial_investment.required' => 'Initial capital is required.',
+            'initial_investment.min'      => 'Initial capital cannot be negative.',
+            'discount_rate.required'      => 'Discount rate is required.',
+            'discount_rate.max'           => 'The discount rate may not exceed 100%.',
+            'cash_flows.required'         => 'Minimum one year of cash flow must be filled in.',
+            'cash_flows.*.required'       => 'All cash flow columns must be filled in.',
+            'cash_flows.*.numeric'        => 'Cash flow must be a number.',
         ]);
 
         $result  = $this->npvService->calculate(
@@ -53,21 +49,21 @@ class NpvController extends Controller
             array_map('floatval', $validated['cash_flows'])
         );
 
-        // Simpan ke DB via Repository
+        // Save to DB
         $project = $this->npvRepository->saveProject($validated['project_name'], $result);
 
         return redirect()->route('npv.show', $project->id)
-                         ->with('success', 'Perhitungan berhasil disimpan!');
+                         ->with('success', 'Calculation saved successfully!');
     }
 
-    /** GET /npv/{id} — Tampilkan hasil dari DB */
+    // GET /npv/{id} 
     public function show(int $id)
     {
         $project = $this->npvRepository->findWithCashFlows($id);
         return view('npv.result', compact('project'));
     }
 
-    /** GET /npv/history — Daftar riwayat proyek */
+    // GET /npv/history
     public function history()
     {
         $projects = $this->npvRepository->getAllProjectsPaginated(10);
@@ -75,11 +71,11 @@ class NpvController extends Controller
         return view('npv.history', compact('projects', 'stats'));
     }
 
-    /** DELETE /npv/{id} — Hapus proyek */
+    // DELETE /npv/{id}
     public function destroy(int $id)
     {
         $this->npvRepository->delete($id);
         return redirect()->route('npv.history')
-                         ->with('success', 'Proyek berhasil dihapus.');
+                         ->with('success', 'The project was successfully deleted.');
     }
 }

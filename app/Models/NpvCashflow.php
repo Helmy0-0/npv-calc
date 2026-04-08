@@ -7,12 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * ============================================================
  *  MODEL: NpvCashFlow
  *  Layer  : Data / Model Layer
- *  Tugas  : Merepresentasikan tabel npv_cash_flows.
- *           Menyimpan detail PV per tahun untuk setiap proyek.
- * ============================================================
  *
  * @property int    $id
  * @property int    $npv_project_id
@@ -42,11 +38,7 @@ class NpvCashFlow extends Model
         'year'            => 'integer',
     ];
 
-    // ── RELASI ────────────────────────────────────────────────────────
 
-    /**
-     * Setiap baris arus kas milik satu proyek.
-     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(NpvProject::class, 'npv_project_id');
