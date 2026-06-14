@@ -14,8 +14,9 @@ class NpvController extends Controller
 {
     public function __construct(
         private readonly NpvCalculatorService $npvService,
-        private readonly NpvRepository        $npvRepository
-    ) {}
+        private readonly NpvRepository $npvRepository
+    ) {
+    }
 
     /** GET /npv — Form input */
     public function index()
@@ -23,27 +24,27 @@ class NpvController extends Controller
         return view('npv.index');
     }
 
-    /** POST /npv/calculate — Validasi → Hitung → Simpan → Redirect */
+    /** POST /npv/calculate — Validate → Calculate → Save → Redirect */
     public function calculate(Request $request)
     {
         $validated = $request->validate([
-            'project_name'       => 'required|string|max:100',
+            'project_name' => 'required|string|max:100',
             'initial_investment' => 'required|numeric|min:0',
-            'discount_rate'      => 'required|numeric|min:0|max:100',
-            'cash_flows'         => 'required|array|min:1',
-            'cash_flows.*'       => 'required|numeric',
+            'discount_rate' => 'required|numeric|min:0|max:100',
+            'cash_flows' => 'required|array|min:1',
+            'cash_flows.*' => 'required|numeric',
         ], [
-            'project_name.required'       => 'The project name is required.',
+            'project_name.required' => 'The project name is required.',
             'initial_investment.required' => 'Initial capital is required.',
-            'initial_investment.min'      => 'Initial capital cannot be negative.',
-            'discount_rate.required'      => 'Discount rate is required.',
-            'discount_rate.max'           => 'The discount rate may not exceed 100%.',
-            'cash_flows.required'         => 'Minimum one year of cash flow must be filled in.',
-            'cash_flows.*.required'       => 'All cash flow columns must be filled in.',
-            'cash_flows.*.numeric'        => 'Cash flow must be a number.',
+            'initial_investment.min' => 'Initial capital cannot be negative.',
+            'discount_rate.required' => 'Discount rate is required.',
+            'discount_rate.max' => 'The discount rate may not exceed 100%.',
+            'cash_flows.required' => 'Minimum one year of cash flow must be filled in.',
+            'cash_flows.*.required' => 'All cash flow columns must be filled in.',
+            'cash_flows.*.numeric' => 'Cash flow must be a number.',
         ]);
 
-        $result  = $this->npvService->calculate(
+        $result = $this->npvService->calculate(
             (float) $validated['initial_investment'],
             (float) $validated['discount_rate'],
             array_map('floatval', $validated['cash_flows'])
@@ -53,21 +54,38 @@ class NpvController extends Controller
         $project = $this->npvRepository->saveProject($validated['project_name'], $result);
 
         return redirect()->route('npv.show', $project->id)
-                         ->with('success', 'Calculation saved successfully!');
+            ->with('success', 'Calculation saved successfully!');
     }
 
     // GET /npv/{id} 
     public function show(int $id)
     {
         $project = $this->npvRepository->findWithCashFlows($id);
-        return view('npv.result', compact('project'));
+        $cashFlows = $project->cashFlows
+            ->pluck('cash_flow')
+            ->map(fn($cashFlow) => (float) $cashFlow)
+            ->all();
+
+        $sensitivityRevenue = $this->npvService->sensitivityByRevenue(
+            (float) $project->initial_investment,
+            (float) $project->discount_rate,
+            $cashFlows
+        );
+
+        $sensitivityDiscountRate = $this->npvService->sensitivityByDiscountRate(
+            (float) $project->initial_investment,
+            (float) $project->discount_rate,
+            $cashFlows
+        );
+
+        return view('npv.result', compact('project', 'sensitivityRevenue', 'sensitivityDiscountRate'));
     }
 
     // GET /npv/history
     public function history()
     {
         $projects = $this->npvRepository->getAllProjectsPaginated(10);
-        $stats    = $this->npvRepository->getStats();
+        $stats = $this->npvRepository->getStats();
         return view('npv.history', compact('projects', 'stats'));
     }
 
@@ -76,6 +94,6 @@ class NpvController extends Controller
     {
         $this->npvRepository->delete($id);
         return redirect()->route('npv.history')
-                         ->with('success', 'The project was successfully deleted.');
+            ->with('success', 'The project was successfully deleted.');
     }
 }

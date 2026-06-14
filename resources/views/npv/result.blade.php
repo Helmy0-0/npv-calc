@@ -1,91 +1,480 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil NPV — ' . $project->project_name)
+@section('title', 'NPV Result — ' . $project->project_name)
 
 @push('styles')
-<style>
-    .decision-banner {
-        border-radius: var(--radius-lg);
-        padding: 2rem 2.5rem;
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        position: relative;
-        overflow: hidden;
-    }
-    .decision-banner.feasible   { background: rgba(16,185,129,.08); border: 1.5px solid rgba(16,185,129,.3); }
-    .decision-banner.infeasible { background: rgba(244,63,94,.08);  border: 1.5px solid rgba(244,63,94,.3); }
-    .decision-banner.breakeven  { background: rgba(245,158,11,.08); border: 1.5px solid rgba(245,158,11,.3); }
+    <style>
+        .decision-banner {
+            border-radius: var(--radius-lg);
+            padding: 2rem 2.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+        }
 
-    .decision-meta { font-size:.75rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; margin-bottom:.5rem; }
-    .decision-banner.feasible   .decision-meta { color: var(--clr-success); }
-    .decision-banner.infeasible .decision-meta { color: var(--clr-danger); }
-    .decision-banner.breakeven  .decision-meta { color: var(--clr-warning); }
+        .decision-banner.feasible {
+            background: rgba(16, 185, 129, .08);
+            border: 1.5px solid rgba(16, 185, 129, .3);
+        }
 
-    .decision-title { font-family:var(--font-display); font-size:clamp(1.3rem,3vw,2rem); font-weight:800; color:#fff; line-height:1.2; }
-    .decision-project { font-size:.9rem; color:var(--clr-muted); margin-top:.5rem; }
-    .decision-project strong { color:var(--clr-text); }
+        .decision-banner.infeasible {
+            background: rgba(244, 63, 94, .08);
+            border: 1.5px solid rgba(244, 63, 94, .3);
+        }
 
-    .npv-badge .label { font-size:.7rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--clr-muted); margin-bottom:.25rem; }
-    .npv-value { font-family:var(--font-display); font-size:clamp(1.5rem,3vw,2.2rem); font-weight:800; }
-    .npv-value.positive { color:var(--clr-success); }
-    .npv-value.negative { color:var(--clr-danger); }
-    .npv-value.zero     { color:var(--clr-warning); }
+        .decision-banner.breakeven {
+            background: rgba(245, 158, 11, .08);
+            border: 1.5px solid rgba(245, 158, 11, .3);
+        }
 
-    .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:2rem; }
-    @media(max-width:640px){ .summary-grid{ grid-template-columns:1fr; } }
-    .summary-card { background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius-md); padding:1.25rem 1.5rem; }
-    .summary-card .s-label { font-size:.7rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--clr-muted); margin-bottom:.5rem; }
-    .summary-card .s-value { font-family:var(--font-display); font-size:1.35rem; font-weight:700; color:#fff; }
-    .summary-card .s-value.accent { color:var(--clr-accent); }
+        .decision-meta {
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: .5rem;
+        }
 
-    .table-card { background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:2rem; }
-    .table-header { padding:1.25rem 1.75rem; border-bottom:1px solid var(--clr-border); display:flex; align-items:center; justify-content:space-between; }
-    .table-header h2 { font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; }
-    .table-header span { font-size:.75rem; color:var(--clr-muted); }
-    .table-wrap { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; }
-    thead th { background:var(--clr-surface-2); padding:.75rem 1.25rem; text-align:right; font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--clr-muted); white-space:nowrap; }
-    thead th:first-child { text-align:center; }
-    tbody tr { border-top:1px solid var(--clr-border); transition:background .15s; }
-    tbody tr:hover { background:rgba(255,255,255,.02); }
-    tbody td { padding:.85rem 1.25rem; text-align:right; font-size:.9rem; color:var(--clr-text); white-space:nowrap; }
-    tbody td:first-child { text-align:center; font-family:var(--font-display); font-weight:700; color:var(--clr-accent); }
-    tfoot td { padding:1rem 1.25rem; font-weight:700; text-align:right; border-top:2px solid var(--clr-border); font-size:.9rem; background:var(--clr-surface-2); }
-    tfoot td:first-child { text-align:center; color:var(--clr-muted); font-size:.8rem; }
-    .pv-positive { color:var(--clr-success); }
-    .pv-negative { color:var(--clr-danger); }
+        .decision-banner.feasible .decision-meta {
+            color: var(--clr-success);
+        }
 
-    .detail-box { background:rgba(14,165,233,.04); border:1px solid rgba(14,165,233,.12); border-radius:var(--radius-md); padding:1.25rem 1.5rem; margin-bottom:2rem; }
-    .detail-box h3 { font-family:var(--font-display); font-size:.8rem; font-weight:700; color:var(--clr-accent-2); letter-spacing:.1em; text-transform:uppercase; margin-bottom:.75rem; }
-    .detail-step { font-family:'Courier New',monospace; font-size:.85rem; color:#bae6fd; line-height:2; }
-    .detail-step .hl { color:var(--clr-accent); }
+        .decision-banner.infeasible .decision-meta {
+            color: var(--clr-danger);
+        }
 
-    .action-bar { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
-    .btn-back { display:inline-flex; align-items:center; gap:.5rem; background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius-sm); color:var(--clr-text); padding:.65rem 1.25rem; text-decoration:none; font-size:.875rem; font-weight:500; transition:border-color .2s,color .2s; }
-    .btn-back:hover { border-color:var(--clr-accent); color:var(--clr-accent); }
-    .btn-delete { display:inline-flex; align-items:center; gap:.5rem; background:rgba(244,63,94,.08); border:1px solid rgba(244,63,94,.25); border-radius:var(--radius-sm); color:var(--clr-danger); padding:.65rem 1.25rem; font-size:.875rem; font-weight:500; cursor:pointer; transition:background .2s; }
-    .btn-delete:hover { background:rgba(244,63,94,.18); }
+        .decision-banner.breakeven .decision-meta {
+            color: var(--clr-warning);
+        }
 
-    .meta-pill { display:inline-flex; align-items:center; gap:.4rem; background:rgba(255,255,255,.04); border:1px solid var(--clr-border); border-radius:100px; padding:.3rem .75rem; font-size:.75rem; color:var(--clr-muted); }
-    .saved-badge { background:rgba(0,212,170,.08); border:1px solid rgba(0,212,170,.2); border-radius:100px; padding:.3rem .75rem; font-size:.72rem; font-weight:600; color:var(--clr-accent); letter-spacing:.05em; }
-</style>
+        .decision-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.3rem, 3vw, 2rem);
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .decision-project {
+            font-size: .9rem;
+            color: var(--clr-muted);
+            margin-top: .5rem;
+        }
+
+        .decision-project strong {
+            color: var(--clr-text);
+        }
+
+        .npv-badge .label {
+            font-size: .7rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--clr-muted);
+            margin-bottom: .25rem;
+        }
+
+        .npv-value {
+            font-family: var(--font-display);
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 800;
+        }
+
+        .npv-value.positive {
+            color: var(--clr-success);
+        }
+
+        .npv-value.negative {
+            color: var(--clr-danger);
+        }
+
+        .npv-value.zero {
+            color: var(--clr-warning);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media(max-width:640px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-card {
+            background: var(--clr-surface);
+            border: 1px solid var(--clr-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .summary-card .s-label {
+            font-size: .7rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--clr-muted);
+            margin-bottom: .5rem;
+        }
+
+        .summary-card .s-value {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .summary-card .s-value.accent {
+            color: var(--clr-accent);
+        }
+
+        .table-card {
+            background: var(--clr-surface);
+            border: 1px solid var(--clr-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.25rem 1.75rem;
+            border-bottom: 1px solid var(--clr-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-header h2 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .table-header span {
+            font-size: .75rem;
+            color: var(--clr-muted);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: var(--clr-surface-2);
+            padding: .75rem 1.25rem;
+            text-align: right;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--clr-muted);
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            text-align: center;
+        }
+
+        tbody tr {
+            border-top: 1px solid var(--clr-border);
+            transition: background .15s;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, .02);
+        }
+
+        tbody td {
+            padding: .85rem 1.25rem;
+            text-align: right;
+            font-size: .9rem;
+            color: var(--clr-text);
+            white-space: nowrap;
+        }
+
+        tbody td:first-child {
+            text-align: center;
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--clr-accent);
+        }
+
+        tfoot td {
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+            text-align: right;
+            border-top: 2px solid var(--clr-border);
+            font-size: .9rem;
+            background: var(--clr-surface-2);
+        }
+
+        tfoot td:first-child {
+            text-align: center;
+            color: var(--clr-muted);
+            font-size: .8rem;
+        }
+
+        .pv-positive {
+            color: var(--clr-success);
+        }
+
+        .pv-negative {
+            color: var(--clr-danger);
+        }
+
+        .detail-box {
+            background: rgba(14, 165, 233, .04);
+            border: 1px solid rgba(14, 165, 233, .12);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .detail-box h3 {
+            font-family: var(--font-display);
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--clr-accent-2);
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: .75rem;
+        }
+
+        .detail-step {
+            font-family: 'Courier New', monospace;
+            font-size: .85rem;
+            color: #bae6fd;
+            line-height: 2;
+        }
+
+        .detail-step .hl {
+            color: var(--clr-accent);
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: var(--clr-surface);
+            border: 1px solid var(--clr-border);
+            border-radius: var(--radius-sm);
+            color: var(--clr-text);
+            padding: .65rem 1.25rem;
+            text-decoration: none;
+            font-size: .875rem;
+            font-weight: 500;
+            transition: border-color .2s, color .2s;
+        }
+
+        .btn-back:hover {
+            border-color: var(--clr-accent);
+            color: var(--clr-accent);
+        }
+
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(244, 63, 94, .08);
+            border: 1px solid rgba(244, 63, 94, .25);
+            border-radius: var(--radius-sm);
+            color: var(--clr-danger);
+            padding: .65rem 1.25rem;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(244, 63, 94, .18);
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--clr-border);
+            border-radius: 100px;
+            padding: .3rem .75rem;
+            font-size: .75rem;
+            color: var(--clr-muted);
+        }
+
+        .saved-badge {
+            background: rgba(0, 212, 170, .08);
+            border: 1px solid rgba(0, 212, 170, .2);
+            border-radius: 100px;
+            padding: .3rem .75rem;
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--clr-accent);
+            letter-spacing: .05em;
+        }
+
+        /* ── SENSITIVITY TABLES ── */
+        .sens-section-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 1rem;
+            margin-top: .5rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .sens-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--clr-border);
+        }
+
+        .sens-intro {
+            font-size: .875rem;
+            color: var(--clr-muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+
+        .sens-intro strong {
+            color: var(--clr-text);
+        }
+
+        .sens-table thead th {
+            text-align: left;
+        }
+
+        .sens-table thead th:not(:first-child) {
+            text-align: right;
+        }
+
+        .sens-table tbody td {
+            text-align: right;
+        }
+
+        .sens-table tbody td:first-child {
+            text-align: left;
+            font-family: var(--font-body);
+            font-weight: 500;
+            color: var(--clr-text);
+        }
+
+        .sens-table tr.base-case {
+            background: rgba(0, 212, 170, .05);
+            border-top: 1px solid rgba(0, 212, 170, .2) !important;
+            border-bottom: 1px solid rgba(0, 212, 170, .2) !important;
+        }
+
+        .sens-table tr.base-case td {
+            font-weight: 700;
+        }
+
+        .sens-table tr.base-case td:first-child {
+            color: var(--clr-accent);
+        }
+
+        .dec-badge {
+            display: inline-block;
+            padding: .2rem .65rem;
+            border-radius: 100px;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        .dec-badge.worth {
+            background: rgba(16, 185, 129, .12);
+            color: var(--clr-success);
+            border: 1px solid rgba(16, 185, 129, .25);
+        }
+
+        .dec-badge.reject {
+            background: rgba(244, 63, 94, .12);
+            color: var(--clr-danger);
+            border: 1px solid rgba(244, 63, 94, .25);
+        }
+
+        .dec-badge.breakeven {
+            background: rgba(245, 158, 11, .12);
+            color: var(--clr-warning);
+            border: 1px solid rgba(245, 158, 11, .25);
+        }
+
+        .status-badge {
+            font-size: .75rem;
+            font-weight: 600;
+            padding: .2rem .65rem;
+            border-radius: 100px;
+        }
+
+        .status-initial {
+            color: var(--clr-accent);
+            background: rgba(0, 212, 170, .08);
+            border: 1px solid rgba(0, 212, 170, .2);
+        }
+
+        .status-stable {
+            color: var(--clr-muted);
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--clr-border);
+        }
+
+        .status-changed {
+            color: var(--clr-danger);
+            background: rgba(244, 63, 94, .08);
+            border: 1px solid rgba(244, 63, 94, .2);
+        }
+
+        .sens-npv-pos {
+            color: var(--clr-success);
+            font-weight: 600;
+        }
+
+        .sens-npv-neg {
+            color: var(--clr-danger);
+            font-weight: 600;
+        }
+    </style>
 @endpush
 
 @section('content')
 
     @if(session('success'))
-        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:var(--radius-md);padding:.85rem 1.25rem;margin-bottom:1.5rem;color:#6ee7b7;font-size:.875rem;display:flex;align-items:center;gap:.5rem;">
+        <div
+            style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:var(--radius-md);padding:.85rem 1.25rem;margin-bottom:1.5rem;color:#6ee7b7;font-size:.875rem;display:flex;align-items:center;gap:.5rem;">
             Success {{ session('success') }}
         </div>
     @endif
 
     <div class="page-header">
         <span class="badge">Calculation Results Report</span>
-        <h1>Analisis <span>NPV</span></h1>
+        <h1>Analyze <span>NPV</span></h1>
         <div style="display:flex;gap:.75rem;align-items:center;margin-top:.75rem;flex-wrap:wrap;">
             <span class="saved-badge">Saved</span>
             <span class="meta-pill">ID #{{ $project->id }}</span>
@@ -144,14 +533,14 @@
                 </thead>
                 <tbody>
                     @foreach ($project->cashFlows as $row)
-                    <tr>
-                        <td>Year {{ $row->year }}</td>
-                        <td>Rp {{ number_format($row->cash_flow, 2, ',', '.') }}</td>
-                        <td>{{ number_format($row->discount_factor, 6, ',', '.') }}</td>
-                        <td class="{{ $row->present_value >= 0 ? 'pv-positive' : 'pv-negative' }}">
-                            Rp {{ number_format($row->present_value, 2, ',', '.') }}
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>Year {{ $row->year }}</td>
+                            <td>Rp {{ number_format($row->cash_flow, 2, ',', '.') }}</td>
+                            <td>{{ number_format($row->discount_factor, 6, ',', '.') }}</td>
+                            <td class="{{ $row->present_value >= 0 ? 'pv-positive' : 'pv-negative' }}">
+                                Rp {{ number_format($row->present_value, 2, ',', '.') }}
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
@@ -172,10 +561,123 @@
         <div class="detail-step">
             NPV = <span class="hl">Total PV</span> − <span class="hl">Initial Investment</span><br>
             NPV = Rp {{ number_format($project->total_present_value, 2, ',', '.') }}
-                  − Rp {{ number_format($project->initial_investment, 2, ',', '.') }}<br>
+            − Rp {{ number_format($project->initial_investment, 2, ',', '.') }}<br>
             NPV = <strong>Rp {{ number_format($project->npv, 2, ',', '.') }}</strong>
-            &nbsp;→&nbsp; <span class="hl">{{ $project->npv > 0 ? 'NPV > 0' : ($project->npv < 0 ? 'NPV < 0' : 'NPV = 0') }}</span>
+            &nbsp;→&nbsp; <span
+                class="hl">{{ $project->npv > 0 ? 'NPV > 0' : ($project->npv < 0 ? 'NPV < 0' : 'NPV = 0') }}</span>
             &nbsp;⇒&nbsp; {{ $project->decision }}
+        </div>
+    </div>
+
+    <h2 class="sens-section-title">Sensitivity Analysis</h2>
+    <p class="sens-intro">
+        Evaluate the robustness of project feasibility decisions to changes in key variables.
+        Testing is performed automatically by the system under change scenarios.
+        <strong>-10%, -5%, 0% (Base Case), +5%, and +10%</strong>
+        from the base conditions of this project.
+    </p>
+
+    {{-- ── TABLE 1: INCOME SENSITIVITY ── --}}
+    <div class="table-card">
+        <div class="table-header">
+            <h2>Results of Annual Income Sensitivity Analysis</h2>
+            <span>Fixed discount rate {{ number_format($project->discount_rate, 2, ',', '.') }}%</span>
+        </div>
+        <div class="table-wrap">
+            <table class="sens-table">
+                <thead>
+                    <tr>
+                        <th>Change Scenario</th>
+                        <th>Estimated Annual Revenue</th>
+                        <th>Final NPV Value</th>
+                        <th>Decision Recommendation</th>
+                        <th>Robustness Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($sensitivityRevenue as $row)
+                        <tr class="{{ $row['is_base'] ? 'base-case' : '' }}">
+                            <td>{{ $row['scenario'] }}</td>
+                            <td>Rp {{ number_format($row['avg_revenue'], 0, ',', '.') }}</td>
+                            <td class="{{ $row['npv'] >= 0 ? 'sens-npv-pos' : 'sens-npv-neg' }}">
+                                {{ $row['npv'] >= 0 ? '' : '-' }}Rp {{ number_format(abs($row['npv']), 0, ',', '.') }}
+                            </td>
+                            <td>
+                                @if($row['decision'] === 'WORTHY')
+                                    <span class="dec-badge worth">WORTHY</span>
+                                @elseif($row['decision'] === 'NOT WORTHY')
+                                    <span class="dec-badge reject">NOT WORTHY</span>
+                                @else
+                                    <span class="dec-badge breakeven">BREAK EVEN</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $statusClass = match ($row['status']) {
+                                        'Initial' => 'status-initial',
+                                        'Stable' => 'status-stable',
+                                        'Changed (Turning Point)' => 'status-changed',
+                                        default => 'status-stable',
+                                    };
+                                @endphp
+                                <span class="status-badge {{ $statusClass }}">{{ $row['status'] }}</span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- ── TABLE 2: DISCOUNT RATE SENSITIVITY ── --}}
+    <div class="table-card">
+        <div class="table-header">
+            <h2>Interest Rate Sensitivity Analysis Results (Discount Rate)</h2>
+            <span>Fixed cash flow, rate base {{ number_format($project->discount_rate, 2, ',', '.') }}%</span>
+        </div>
+        <div class="table-wrap">
+            <table class="sens-table">
+                <thead>
+                    <tr>
+                        <th>Change Scenario</th>
+                        <th>Discount Rate Percentage</th>
+                        <th>Final NPV Value</th>
+                        <th>Decision Recommendation</th>
+                        <th>Robustness Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($sensitivityDiscountRate as $row)
+                        <tr class="{{ $row['is_base'] ? 'base-case' : '' }}">
+                            <td>{{ $row['scenario'] }}</td>
+                            <td>{{ number_format($row['adjusted_rate'], 2, ',', '.') }}%</td>
+                            <td class="{{ $row['npv'] >= 0 ? 'sens-npv-pos' : 'sens-npv-neg' }}">
+                                {{ $row['npv'] >= 0 ? '' : '-' }}Rp {{ number_format(abs($row['npv']), 0, ',', '.') }}
+                            </td>
+                            <td>
+                                @if($row['decision'] === 'WORTHY')
+                                    <span class="dec-badge worth">WORTHY</span>
+                                @elseif($row['decision'] === 'NOT WORTHY')
+                                    <span class="dec-badge reject">NOT WORTHY</span>
+                                @else
+                                    <span class="dec-badge breakeven">BREAK EVEN</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $statusClass = match ($row['status']) {
+                                        'Initial' => 'status-initial',
+                                        'Stable' => 'status-stable',
+                                        'Changed (Turning Point)' => 'status-changed',
+                                        default => 'status-stable',
+                                    };
+                                @endphp
+                                <span class="status-badge {{ $statusClass }}">{{ $row['status'] }}</span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -185,10 +687,10 @@
         <a href="{{ route('npv.history') }}" class="btn-back">View History</a>
 
         <form action="{{ route('npv.destroy', $project->id) }}" method="POST"
-              onsubmit="return confirm('You sure want to delete this project from history??')">
+            onsubmit="return confirm('You sure want to delete this project from history??')">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn-delete">🗑 Hapus</button>
+            <button type="submit" class="btn-delete">🗑 Delete</button>
         </form>
     </div>
 

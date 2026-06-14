@@ -243,7 +243,7 @@
                             </td>
                             <td class="num">Rp {{ number_format($project->initial_investment, 0, ',', '.') }}</td>
                             <td class="num">{{ number_format($project->discount_rate, 2, ',', '.') }}%</td>
-                            <td class="num">{{ $project->cash_flows_count }} thn</td>
+                            <td class="num">{{ $project->cash_flows_count }}</td>
                             <td class="num" style="font-weight:600;color:{{ $project->npv > 0 ? 'var(--clr-success)' : ($project->npv < 0 ? 'var(--clr-danger)' : 'var(--clr-warning)') }}">
                                 Rp {{ number_format($project->npv, 0, ',', '.') }}
                             </td>

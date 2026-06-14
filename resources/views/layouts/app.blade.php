@@ -1,46 +1,57 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'SPK Kelayakan Investasi') | NPV Calculator</title>
+    <title>@yield('title', 'Investment Feasibility DSS') | NPV Calculator</title>
 
     {{-- Google Fonts: Syne (display) + DM Sans (body) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+        rel="stylesheet">
 
     <style>
         /* ============================================================
            GLOBAL CSS VARIABLES & RESET
            ============================================================ */
         :root {
-            --clr-bg:        #0a0f1e;
-            --clr-surface:   #111827;
+            --clr-bg: #0a0f1e;
+            --clr-surface: #111827;
             --clr-surface-2: #1a2235;
-            --clr-border:    #1f2d45;
-            --clr-accent:    #00d4aa;
-            --clr-accent-2:  #0ea5e9;
-            --clr-text:      #e2e8f0;
-            --clr-muted:     #64748b;
-            --clr-danger:    #f43f5e;
-            --clr-success:   #10b981;
-            --clr-warning:   #f59e0b;
+            --clr-border: #1f2d45;
+            --clr-accent: #00d4aa;
+            --clr-accent-2: #0ea5e9;
+            --clr-text: #e2e8f0;
+            --clr-muted: #64748b;
+            --clr-danger: #f43f5e;
+            --clr-success: #10b981;
+            --clr-warning: #f59e0b;
 
-            --font-display:  'Syne', sans-serif;
-            --font-body:     'DM Sans', sans-serif;
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
 
-            --radius-sm:  6px;
-            --radius-md:  12px;
-            --radius-lg:  20px;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
 
             --shadow-glow: 0 0 40px rgba(0, 212, 170, 0.08);
         }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: var(--font-body);
@@ -50,8 +61,8 @@
             line-height: 1.6;
             /* Subtle grid background */
             background-image:
-                linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
         }
 
@@ -60,7 +71,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10,15,30,0.85);
+            background: rgba(10, 15, 30, 0.85);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--clr-border);
             padding: 0 2rem;
@@ -105,7 +116,9 @@
             transition: color .2s;
         }
 
-        .navbar-nav a:hover { color: var(--clr-accent); }
+        .navbar-nav a:hover {
+            color: var(--clr-accent);
+        }
 
         /* ── MAIN WRAPPER ── */
         .main-content {
@@ -126,8 +139,8 @@
             letter-spacing: .1em;
             text-transform: uppercase;
             color: var(--clr-accent);
-            background: rgba(0,212,170,.1);
-            border: 1px solid rgba(0,212,170,.2);
+            background: rgba(0, 212, 170, .1);
+            border: 1px solid rgba(0, 212, 170, .2);
             padding: .3rem .75rem;
             border-radius: 100px;
             margin-bottom: 1rem;
@@ -174,12 +187,14 @@
             margin-top: 4rem;
         }
 
-        .footer strong { color: var(--clr-accent); }
+        .footer strong {
+            color: var(--clr-accent);
+        }
 
         /* ── ALERT / ERROR ── */
         .alert-error {
-            background: rgba(244,63,94,.08);
-            border: 1px solid rgba(244,63,94,.25);
+            background: rgba(244, 63, 94, .08);
+            border: 1px solid rgba(244, 63, 94, .25);
             border-radius: var(--radius-md);
             padding: 1rem 1.25rem;
             margin-bottom: 1.5rem;
@@ -187,12 +202,19 @@
             font-size: .875rem;
         }
 
-        .alert-error ul { padding-left: 1.2rem; margin-top: .5rem; }
-        .alert-error li { margin-bottom: .25rem; }
+        .alert-error ul {
+            padding-left: 1.2rem;
+            margin-top: .5rem;
+        }
+
+        .alert-error li {
+            margin-bottom: .25rem;
+        }
     </style>
 
     @stack('styles')
 </head>
+
 <body>
 
     {{-- ── NAVIGATION ── --}}
@@ -226,9 +248,11 @@
 
     {{-- ── FOOTER ── --}}
     <footer class="footer">
-        <p>Investment Feasibility Checker &mdash; <strong>Net Present Value (NPV)</strong> &mdash; Build with Laravel</p>
+        <p>Investment Feasibility Checker &mdash; <strong>Net Present Value (NPV)</strong> &mdash; Build with Laravel
+        </p>
     </footer>
 
     @stack('scripts')
 </body>
+
 </html>

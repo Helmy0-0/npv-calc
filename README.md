@@ -132,7 +132,7 @@ composer install
 npm install
 ```
 
-### 3. Configure environment
+### 3. Configure the environment
 
 ```bash
 cp .env.example .env
@@ -180,8 +180,8 @@ http://127.0.0.1:8000
 ## Usage Guide
 
 1. Open the NPV input page.
-2. Enter project name, initial investment, discount rate, and yearly cash flows.
-3. Submit the form to calculate NPV.
+2. Enter the project name, initial investment, discount rate, and yearly cash flows.
+3. Submit the form to calculate the NPV.
 4. Review the result page and decision status.
 5. Visit the history page to see all saved calculations.
 
